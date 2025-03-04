@@ -3,9 +3,7 @@
 import { useState, useRef } from "react";
 
 export default function SEOAgent() {
-  const [chatHistory, setChatHistory] = useState([
-    { id: 1, message: "Hello! How can I help you today?", sender: "bot" },
-  ]);
+  const [chatHistory, setChatHistory] = useState([]); // ✅ Start empty
   const [input, setInput] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const typingIntervalRef = useRef(null);
@@ -106,6 +104,11 @@ export default function SEOAgent() {
     <div className="w-1/2 flex flex-col p-4 bg-white border border-gray-300 rounded-lg mx-4">
       <h2 className="text-lg font-bold mb-4">SEO Agent</h2>
 
+      <div className="p-4 bg-gray-200 rounded-lg mb-4 text-left w-fit">
+        Hello! How can I help you today?
+      </div>
+
+      {/* ✅ Pre-Written Question Buttons */}
       <div className="flex flex-col space-y-2 mb-4 w-fit">
         {suggestedQuestions.map((question, index) => (
           <button
@@ -118,27 +121,32 @@ export default function SEOAgent() {
           </button>
         ))}
       </div>
+
+      {/* ✅ Chat History */}
       <div className="flex-1 overflow-y-auto p-4 mb-4 rounded-lg">
-        {chatHistory.map((chat, index) => (
-          <div
-            key={`${chat.id}-${index}`} // Ensure each chat message has a unique key
-            className={`mb-2 flex ${
-              chat.sender === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <p
-              className={`p-2 rounded-lg inline-block ${
-                chat.sender === "user"
-                  ? "bg-black text-white"
-                  : "bg-gray-200 text-black"
+        {chatHistory.length > 0 &&
+          chatHistory.map((chat, index) => (
+            <div
+              key={`${chat.id}-${index}`}
+              className={`mb-2 flex ${
+                chat.sender === "user" ? "justify-end" : "justify-start"
               }`}
-              dangerouslySetInnerHTML={{
-                __html: chat.message.replace(/\n/g, "<br>"),
-              }}
-            ></p>
-          </div>
-        ))}
+            >
+              <p
+                className={`p-2 rounded-lg inline-block ${
+                  chat.sender === "user"
+                    ? "bg-black text-white"
+                    : "bg-gray-200 text-black"
+                }`}
+                dangerouslySetInnerHTML={{
+                  __html: chat.message.replace(/\n/g, "<br>"),
+                }}
+              ></p>
+            </div>
+          ))}
       </div>
+
+      {/* ✅ Input Box & Send Button */}
       <div className="flex">
         <input
           type="text"
