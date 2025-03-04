@@ -12,13 +12,23 @@ export async function POST(req) {
       });
     }
 
+    // Simulate thinking message
+    const thinkingResponse = {
+      success: true,
+      response: "Let me think...",
+    };
+
+    setTimeout(() => {
+      return NextResponse.json(thinkingResponse);
+    }, 500); // Small delay to simulate "thinking"
+
     const openAIResponse = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, // ✅ Uses the environment variable
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
           model: "gpt-4",
@@ -26,7 +36,7 @@ export async function POST(req) {
             {
               role: "system",
               content:
-                "You are an SEO expert providing guidance on keyword optimization, internal linking, and on-page SEO.",
+                "You are an SEO expert providing guidance on keyword optimization, internal linking, and on-page SEO. Format responses properly with bullet points, numbers, and spacing for readability.",
             },
             { role: "user", content: message },
           ],
@@ -35,9 +45,14 @@ export async function POST(req) {
     );
 
     const data = await openAIResponse.json();
+    const formattedResponse = data.choices[0].message.content.replace(
+      /\n/g,
+      "<br>"
+    ); // ✅ Proper formatting with line breaks
+
     return NextResponse.json({
       success: true,
-      response: data.choices[0].message.content,
+      response: formattedResponse,
     });
   } catch (error) {
     console.error("❌ Chatbot API Error:", error);

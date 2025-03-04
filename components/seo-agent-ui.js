@@ -48,7 +48,16 @@ export default function SEOAgentUI() {
       sender: "user",
     };
 
-    setChatHistory([...chatHistory, userMessage]);
+    setChatHistory((prev) => [
+      ...prev,
+      userMessage,
+      {
+        id: prev.length + 2,
+        message: "Let me think...",
+        timestamp: "Now",
+        sender: "bot",
+      },
+    ]);
 
     try {
       const response = await fetch("/api/chatbot", {
@@ -59,13 +68,13 @@ export default function SEOAgentUI() {
 
       const result = await response.json();
       if (result.success) {
-        const botMessage = {
-          id: chatHistory.length + 2,
-          message: result.response,
-          timestamp: "Now",
-          sender: "bot",
-        };
-        setChatHistory((prev) => [...prev, botMessage]);
+        setChatHistory((prev) =>
+          prev.map((chat) =>
+            chat.message === "Let me think..."
+              ? { ...chat, message: result.response }
+              : chat
+          )
+        );
       }
     } catch (error) {
       console.error("Chatbot request failed", error);
@@ -78,19 +87,6 @@ export default function SEOAgentUI() {
     <div className="w-full h-screen flex text-black p-10 bg-white">
       <div className="w-1/4 bg-white p-4 border border-gray-300 rounded-lg overflow-y-hidden">
         <h2 className="text-lg font-bold mb-4">Chat History</h2>
-        {chatHistory.map((chat) => (
-          <div
-            key={chat.id}
-            className={`p-2 border-b border-gray-300 ${
-              chat.sender === "user"
-                ? "text-white bg-black text-right"
-                : "bg-gray-200 text-left"
-            } rounded-lg my-1`}
-          >
-            <p className="text-sm text-gray-500">{chat.timestamp}</p>
-            <p className="p-2 inline-block rounded-lg">{chat.message}</p>
-          </div>
-        ))}
       </div>
 
       <div className="w-1/2 flex flex-col p-4 bg-white border border-gray-300 rounded-lg mx-4">
@@ -110,27 +106,25 @@ export default function SEOAgentUI() {
           ))}
         </div>
         <div className="flex-1 overflow-y-auto p-4 mb-4 border-gray-300 rounded-lg">
-          {chatHistory.map(
-            (chat, index) =>
-              index !== 0 && ( // Prevent duplicate first message
-                <div
-                  key={chat.id}
-                  className={`mb-2 flex ${
-                    chat.sender === "user" ? "justify-end" : "justify-start"
+          {chatHistory
+            .filter((chat) => chat.id !== 1) // ✅ Remove duplicate first message
+            .map((chat) => (
+              <div
+                key={chat.id}
+                className={`mb-2 flex ${
+                  chat.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                <p
+                  className={`p-2 rounded-lg inline-block ${
+                    chat.sender === "user"
+                      ? "bg-black text-white"
+                      : "bg-gray-200 text-black"
                   }`}
-                >
-                  <p
-                    className={`p-2 rounded-lg inline-block ${
-                      chat.sender === "user"
-                        ? "bg-black text-white"
-                        : "bg-gray-200 text-black"
-                    }`}
-                  >
-                    {chat.message}
-                  </p>
-                </div>
-              )
-          )}
+                  dangerouslySetInnerHTML={{ __html: chat.message }}
+                ></p>
+              </div>
+            ))}
         </div>
         <div className="flex">
           <input
