@@ -12,16 +12,16 @@ export async function POST(req) {
       });
     }
 
-    // Simulate thinking message
-    const thinkingResponse = {
-      success: true,
-      response: "Let me think...",
-    };
+    // ✅ Check if the message is a common phrase and return a short response
+    const lowerMessage = message.toLowerCase().trim();
+    if (shortResponses[lowerMessage]) {
+      return NextResponse.json({
+        success: true,
+        response: shortResponses[lowerMessage],
+      });
+    }
 
-    setTimeout(() => {
-      return NextResponse.json(thinkingResponse);
-    }, 500); // Small delay to simulate "thinking"
-
+    // ✅ If no short response exists, send the request to OpenAI
     const openAIResponse = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -36,7 +36,7 @@ export async function POST(req) {
             {
               role: "system",
               content:
-                "You are an SEO expert providing guidance on keyword optimization, internal linking, and on-page SEO. Format responses properly with bullet points, numbers, and spacing for readability.",
+                "You are an SEO expert providing guidance on keyword optimization, internal linking, and on-page SEO.",
             },
             { role: "user", content: message },
           ],
@@ -45,14 +45,9 @@ export async function POST(req) {
     );
 
     const data = await openAIResponse.json();
-    const formattedResponse = data.choices[0].message.content.replace(
-      /\n/g,
-      "<br>"
-    ); // ✅ Proper formatting with line breaks
-
     return NextResponse.json({
       success: true,
-      response: formattedResponse,
+      response: data.choices[0].message.content,
     });
   } catch (error) {
     console.error("❌ Chatbot API Error:", error);
@@ -62,3 +57,12 @@ export async function POST(req) {
     });
   }
 }
+
+const shortResponses = {
+  "thank you": "You're welcome! 😊",
+  thanks: "No problem! Happy to help. 👍",
+  hello: "Hello there! How can I assist you today?",
+  hi: "Hey! Need help with SEO?",
+  "how are you": "I'm just a chatbot, but I'm here to help!",
+  awesome: "Glad to hear that! 🚀",
+};
